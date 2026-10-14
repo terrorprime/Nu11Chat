@@ -1,0 +1,453 @@
+<title>NullChat</title>
+<style>
+  /* Layout concept: dark cosmic hero → alternating feature bands → CTA, single column that
+     stacks on phones. Playful group-chat identity with its own violet/pink palette. */
+  :root {
+    --bg: #faf9ff;
+    --surface: #ffffff;
+    --surface-2: #f1efff;
+    --fg: #16131f;
+    --muted: #5a5570;
+    --accent: #6d5cff;
+    --accent-ink: #4a3bd6;
+    --pink: #ff5fb0;
+    --mint: #39d6a6;
+    --star: #c9c3ff;
+    --hero-bg: radial-gradient(1200px 700px at 72% 18%, #2b1b6b 0%, #170f3a 48%, #0c0820 100%);
+    --hero-fg: #f3f1ff;
+    --hero-muted: #c7c1ec;
+    --ring: rgba(109, 92, 255, .4);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b0818;
+      --surface: #141028;
+      --surface-2: #1c1740;
+      --fg: #eceaf7;
+      --muted: #a39dc8;
+      --accent: #8f82ff;
+      --accent-ink: #b7aeff;
+      --pink: #ff74bd;
+      --mint: #4fe3b5;
+      --star: #5a4fa8;
+      --hero-bg: radial-gradient(1200px 700px at 72% 18%, #2b1b6b 0%, #170f3a 48%, #0c0820 100%);
+      --ring: rgba(143, 130, 255, .5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0818;
+    --surface: #141028;
+    --surface-2: #1c1740;
+    --fg: #eceaf7;
+    --muted: #a39dc8;
+    --accent: #8f82ff;
+    --accent-ink: #b7aeff;
+    --pink: #ff74bd;
+    --mint: #4fe3b5;
+    --star: #5a4fa8;
+    --hero-bg: radial-gradient(1200px 700px at 72% 18%, #2b1b6b 0%, #170f3a 48%, #0c0820 100%);
+    --ring: rgba(143, 130, 255, .5);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Nunito", ui-rounded, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, .brand, .nav-cta, .btn {
+    font-family: "Baloo 2", "Nunito", ui-rounded, system-ui, sans-serif;
+  }
+  h1, h2 { text-wrap: balance; line-height: 1.05; letter-spacing: -.01em; }
+  a { color: inherit; }
+  img { max-width: 100%; }
+
+  .wrap { width: 100%; max-width: 1140px; margin-inline: auto; padding-inline: 20px; }
+
+  /* ---------- NAV ---------- */
+  .nav {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50;
+    background: color-mix(in srgb, var(--hero-bg) 0%, #140d33 88%);
+    backdrop-filter: blur(8px);
+  }
+  .nav-inner { display: flex; align-items: center; gap: 22px; padding-block: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 1.3rem; font-weight: 800; color: #fff; }
+  .brand svg { width: 30px; height: 30px; }
+  .nav-links { display: flex; gap: 22px; margin-left: 14px; }
+  .nav-links a { color: var(--hero-muted); text-decoration: none; font-weight: 700; font-size: .95rem; }
+  .nav-links a:hover { color: #fff; }
+  .nav-cta {
+    margin-left: auto; background: #fff; color: #120c2c; border: none;
+    padding: 9px 18px; border-radius: 999px; font-weight: 800; font-size: .92rem;
+    cursor: pointer; white-space: nowrap;
+  }
+  .nav-cta:hover { color: var(--accent-ink); }
+  .theme-toggle {
+    background: transparent; border: 1.5px solid rgba(255,255,255,.3); color: #fff;
+    width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 1rem;
+    display: grid; place-items: center; flex: none;
+  }
+  .theme-toggle:hover { border-color: #fff; }
+
+  /* ---------- HERO ---------- */
+  .hero { background: var(--hero-bg); color: var(--hero-fg); position: relative; overflow: hidden; }
+  .stars { position: absolute; inset: 0; pointer-events: none; }
+  .star {
+    position: absolute; background: var(--star); border-radius: 50%; opacity: .7;
+    animation: twinkle 3.5s ease-in-out infinite;
+  }
+  @keyframes twinkle { 0%,100% { opacity:.2; } 50% { opacity:.85; } }
+  .hero-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    padding-block: 72px 90px; position: relative; z-index: 2;
+  }
+  .hero h1 { font-size: clamp(2.5rem, 6vw, 4.2rem); font-weight: 800; margin: 0 0 20px; }
+  .hero p.lede { font-size: 1.15rem; color: var(--hero-muted); max-width: 46ch; margin: 0 0 32px; }
+  .dl-note { color: var(--hero-muted); font-size: .85rem; margin: 16px 0 0; letter-spacing: .02em; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 16px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; border: none; cursor: pointer;
+    padding: 15px 26px; border-radius: 999px; font-weight: 800; font-size: 1.02rem;
+    text-decoration: none; transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-light { background: #fff; color: #140c33; }
+  .btn-light:hover { box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+  .btn-dark { background: #221a4d; color: #fff; }
+  .btn-dark:hover { box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+
+  /* ---------- HERO ART ---------- */
+  .hero-art { position: relative; min-height: 360px; }
+  .chat-card {
+    background: #1d1740; border: 1px solid rgba(255,255,255,.08); border-radius: 18px;
+    padding: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.45); max-width: 420px; margin-left: auto;
+  }
+  .chat-head { display: flex; align-items: center; gap: 8px; padding: 2px 4px 12px; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .chat-head .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .chan { margin-left: 6px; color: #cfc9f0; font-weight: 800; }
+  .msg { display: flex; gap: 11px; padding: 11px 4px; }
+  .av { width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center; font-weight: 800; color: #fff; font-size: .9rem; }
+  .msg .body { min-width: 0; }
+  .msg .name { font-weight: 800; font-size: .92rem; }
+  .msg .name .time { color: #8c86b0; font-weight: 600; font-size: .72rem; margin-left: 7px; }
+  .msg .text { color: #ded9f5; font-size: .92rem; }
+  .pill-react { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; background: rgba(143,130,255,.18); border: 1px solid rgba(143,130,255,.4); color: #cfc9f0; font-size: .78rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+
+  .mascot { position: absolute; left: -14px; bottom: -26px; width: 128px; animation: float 5s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-16px) rotate(2deg); } }
+
+  /* ---------- FEATURES ---------- */
+  .feature { padding-block: 84px; }
+  .feature:nth-child(even) { background: var(--surface-2); }
+  .f-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .feature:nth-child(even) .f-art { order: 2; }
+  .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; font-weight: 800; color: var(--accent); margin: 0 0 12px; }
+  .feature h2 { font-size: clamp(1.7rem, 3.6vw, 2.6rem); margin: 0 0 16px; }
+  .feature p { color: var(--muted); font-size: 1.08rem; max-width: 48ch; margin: 0; }
+
+  .panel { background: var(--surface); border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent); border-radius: 20px; padding: 20px; box-shadow: 0 18px 44px rgba(32,20,80,.12); }
+  .srv-row { display: flex; gap: 12px; }
+  .srv-rail { display: flex; flex-direction: column; gap: 12px; flex: none; }
+  .srv-ico { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; color: #fff; font-weight: 800; }
+  .srv-ico.sel { border-radius: 14px; box-shadow: 0 0 0 3px var(--accent); }
+  .srv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .vc { display: flex; align-items: center; gap: 10px; background: var(--surface-2); border-radius: 12px; padding: 9px 12px; }
+  .vc .av { width: 34px; height: 34px; font-size: .78rem; }
+  .vc .wave { margin-left: auto; display: flex; gap: 3px; align-items: flex-end; height: 20px; }
+  .vc .wave span { width: 3px; background: var(--mint); border-radius: 2px; animation: eq 1s ease-in-out infinite; }
+  @keyframes eq { 0%,100% { height: 5px; } 50% { height: 18px; } }
+
+  .emoji-float { font-size: 2.2rem; }
+
+  /* ---------- CTA ---------- */
+  .cta-band { background: var(--hero-bg); color: var(--hero-fg); text-align: center; padding-block: 86px; position: relative; overflow: hidden; }
+  .cta-band h2 { font-size: clamp(1.8rem, 4.5vw, 3rem); margin: 0 0 28px; }
+  .cta-band .btn-light { margin-inline: auto; }
+
+  /* ---------- FOOTER ---------- */
+  footer { background: #0c0820; color: #b7b1dd; padding-block: 56px 40px; }
+  .foot-grid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 36px; }
+  .foot-brand { color: var(--accent); font-size: 1.9rem; font-weight: 800; font-family: "Baloo 2", system-ui; }
+  footer h4 { color: var(--accent); text-transform: uppercase; letter-spacing: .08em; font-size: .82rem; margin: 0 0 14px; }
+  footer ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  footer a { color: #cac4ea; text-decoration: none; font-size: .95rem; }
+  footer a:hover { color: #fff; text-decoration: underline; }
+  .foot-bar { border-top: 1px solid rgba(255,255,255,.1); margin-top: 40px; padding-top: 24px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; font-size: .85rem; color: #8a84b4; }
+
+  @media (max-width: 860px) {
+    .nav-links { display: none; }
+    .hero-grid, .f-grid { grid-template-columns: 1fr; }
+    .hero-grid { padding-block: 48px 70px; }
+    .feature:nth-child(even) .f-art { order: 0; }
+    .hero-art { min-height: 300px; margin-top: 10px; }
+    .foot-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  }
+  @media (max-width: 460px) {
+    .cta-row .btn { width: 100%; justify-content: center; }
+    .foot-grid { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
+
+<!-- ================= NAV ================= -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <span class="brand">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <path d="M14 10h20a8 8 0 0 1 8 8v12a8 8 0 0 1-8 8H24l-10 7v-7a8 8 0 0 1-8-8V18a8 8 0 0 1 8-8Z" fill="#fff"/>
+        <circle cx="19" cy="24" r="3.4" fill="#6d5cff"/>
+        <circle cx="30" cy="24" r="3.4" fill="#6d5cff"/>
+      </svg>
+      NullChat
+    </span>
+    <nav class="nav-links">
+      <a href="#download">Download</a>
+      <a href="#spaces">Spaces</a>
+      <a href="#voice">Voice</a>
+      <a href="#safe">Safety</a>
+    </nav>
+    <button class="theme-toggle" id="themeBtn" title="Toggle theme" aria-label="Toggle light and dark theme">◐</button>
+    <button class="nav-cta">Log In</button>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="stars" id="stars" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <h1>GROUP CHAT<br>FOR YOUR<br>WHOLE CREW</h1>
+      <p class="lede">NullChat is where you hang out with the people you game, build, and goof off with. Spin up a space, drop into voice, and stay close — no matter how far apart you are.</p>
+      <div class="cta-row">
+        <a href="#download" class="btn btn-light js-download">⬇ Download for Windows</a>
+        <a href="#download" class="btn btn-dark">Open in your browser</a>
+      </div>
+      <p class="dl-note">Windows 10+ · 97 MB · Free</p>
+    </div>
+
+    <div class="hero-art">
+      <div class="chat-card" role="img" aria-label="Example NullChat conversation">
+        <div class="chat-head">
+          <span class="dot" style="background:#ff5f56"></span>
+          <span class="dot" style="background:#ffbd2e"></span>
+          <span class="dot" style="background:#27c93f"></span>
+          <span class="chan"># late-night-raids</span>
+        </div>
+        <div class="msg">
+          <span class="av" style="background:linear-gradient(135deg,#6d5cff,#9b7bff)">PX</span>
+          <div class="body">
+            <div class="name">pixelwitch <span class="time">10:42 PM</span></div>
+            <div class="text">ok who's awake, boss spawns in 5 👀</div>
+          </div>
+        </div>
+        <div class="msg">
+          <span class="av" style="background:linear-gradient(135deg,#ff5fb0,#ff9a5f)">KO</span>
+          <div class="body">
+            <div class="name">koalaburger <span class="time">10:42 PM</span></div>
+            <div class="text">joining vc now, grabbing snacks brb</div>
+            <span class="pill-react">🔥 4</span>
+          </div>
+        </div>
+        <div class="msg">
+          <span class="av" style="background:linear-gradient(135deg,#39d6a6,#5cc8ff)">NB</span>
+          <div class="body">
+            <div class="name">nullbot <span class="time">10:43 PM</span></div>
+            <div class="text">GLHF — I'll ping when the raid starts.</div>
+          </div>
+        </div>
+      </div>
+      <!-- original mascot: a friendly floating "null" blob, not Discord's Wumpus -->
+      <svg class="mascot" viewBox="0 0 160 160" aria-hidden="true">
+        <ellipse cx="80" cy="150" rx="34" ry="7" fill="rgba(0,0,0,.25)"/>
+        <path d="M40 78a40 40 0 0 1 80 0v44c0 6-7 9-12 5l-6-5c-3-2-6-2-9 0l-7 5c-3 2-7 2-10 0l-7-5c-3-2-6-2-9 0l-6 5c-5 4-12 1-12-5Z" fill="#8f82ff"/>
+        <path d="M40 78a40 40 0 0 1 80 0v12H40Z" fill="#a99dff"/>
+        <ellipse cx="63" cy="80" rx="12" ry="14" fill="#fff"/>
+        <ellipse cx="97" cy="80" rx="12" ry="14" fill="#fff"/>
+        <circle cx="66" cy="83" r="5.5" fill="#241a4d"/>
+        <circle cx="94" cy="83" r="5.5" fill="#241a4d"/>
+        <circle cx="68" cy="81" r="1.8" fill="#fff"/>
+        <circle cx="96" cy="81" r="1.8" fill="#fff"/>
+        <path d="M70 103c6 6 14 6 20 0" stroke="#241a4d" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="50" cy="96" r="6" fill="#ff8fc6" opacity=".7"/>
+        <circle cx="110" cy="96" r="6" fill="#ff8fc6" opacity=".7"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURE: SPACES ================= -->
+<section class="feature" id="spaces">
+  <div class="wrap f-grid">
+    <div class="f-copy">
+      <p class="eyebrow">Your own corner</p>
+      <h2>Create a space that's all yours</h2>
+      <p>Make a server for your squad of five or your community of five thousand. Set up channels for memes, strategy, and everything in between — then decorate it with roles, colors, and custom emoji until it feels like home.</p>
+    </div>
+    <div class="f-art">
+      <div class="panel">
+        <div class="srv-row">
+          <div class="srv-rail">
+            <div class="srv-ico sel" style="background:linear-gradient(135deg,#6d5cff,#9b7bff)">N</div>
+            <div class="srv-ico" style="background:#ff5fb0">🎮</div>
+            <div class="srv-ico" style="background:#39d6a6">🎨</div>
+            <div class="srv-ico" style="background:#ffb13d">📚</div>
+          </div>
+          <div class="srv-main">
+            <div class="vc" style="font-weight:800"># welcome</div>
+            <div class="vc"># general-chat</div>
+            <div class="vc"># clips-and-wins</div>
+            <div class="vc" style="color:var(--accent);font-weight:800"># 🔊 raid-party</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURE: VOICE ================= -->
+<section class="feature" id="voice">
+  <div class="wrap f-grid">
+    <div class="f-copy">
+      <p class="eyebrow">Drop in anytime</p>
+      <h2>Voice and video that just works</h2>
+      <p>Jump into a voice channel and you're instantly together — no calls to schedule, no links to send. Crystal-clear audio, screen share for game night, and video when you actually want to show your face.</p>
+    </div>
+    <div class="f-art">
+      <div class="panel">
+        <div class="srv-main">
+          <div class="vc">
+            <span class="av" style="background:linear-gradient(135deg,#6d5cff,#9b7bff)">PX</span>
+            <span style="font-weight:700">pixelwitch</span>
+            <span class="wave"><span style="animation-delay:0s"></span><span style="animation-delay:.2s"></span><span style="animation-delay:.4s"></span><span style="animation-delay:.1s"></span></span>
+          </div>
+          <div class="vc">
+            <span class="av" style="background:linear-gradient(135deg,#ff5fb0,#ff9a5f)">KO</span>
+            <span style="font-weight:700">koalaburger</span>
+            <span class="wave"><span style="animation-delay:.3s"></span><span style="animation-delay:.5s"></span><span style="animation-delay:.1s"></span><span style="animation-delay:.4s"></span></span>
+          </div>
+          <div class="vc">
+            <span class="av" style="background:linear-gradient(135deg,#39d6a6,#5cc8ff)">ZZ</span>
+            <span style="font-weight:700">zephyr</span>
+            <span style="margin-left:auto" class="emoji-float">🎧</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURE: SAFETY ================= -->
+<section class="feature" id="safe">
+  <div class="wrap f-grid">
+    <div class="f-copy">
+      <p class="eyebrow">Peace of mind</p>
+      <h2>Built to keep the good vibes</h2>
+      <p>Moderation tools, granular permissions, and privacy controls come standard, so you decide who gets in and what they can do. Spend your time hanging out — not putting out fires.</p>
+    </div>
+    <div class="f-art">
+      <div class="panel" style="display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;min-height:160px">
+        <span class="emoji-float">🛡️</span>
+        <span class="emoji-float">🔒</span>
+        <span class="emoji-float">✅</span>
+        <span class="emoji-float">🤝</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta-band" id="download">
+  <div class="stars" id="stars2" aria-hidden="true"></div>
+  <div class="wrap" style="position:relative;z-index:2">
+    <h2>Your crew is waiting.</h2>
+    <a href="#download" class="btn btn-light js-download">⬇ Download NullChat</a>
+    <p style="color:var(--hero-muted);margin-top:18px">Free to use. Works on Windows, macOS, Linux, iOS, Android & web.</p>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">NullChat</div>
+        <p style="color:#9a94c4;max-width:34ch;margin:12px 0 0">Group chat that's all fun and games. Hang out, level up, and stay close.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul><li><a href="#download">Download</a></li><li><a href="#spaces">Spaces</a></li><li><a href="#voice">Voice</a></li><li><a href="#">Status</a></li></ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul><li><a href="#">About</a></li><li><a href="#">Jobs</a></li><li><a href="#">Blog</a></li><li><a href="#">Brand</a></li></ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul><li><a href="#safe">Safety</a></li><li><a href="#">Support</a></li><li><a href="#">Community</a></li><li><a href="#">Developers</a></li></ul>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2026 NullChat — a demo landing page, not affiliated with any real product.</span>
+      <span>Made as a design sample 💜</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // ↓↓↓ PASTE YOUR REAL DOWNLOAD LINK HERE ↓↓↓
+  // Upload NullChatSetup.exe to a file host (e.g. a GitHub Release),
+  // then put that file's URL between the quotes below. Every
+  // "Download" button on the page will use it automatically.
+  var DOWNLOAD_URL = "https://github.com/terrorprime/NullChat/releases/download/NullChat/NullChatSetup.exe";
+  // ============================================================
+  (function () {
+    var links = document.querySelectorAll('.js-download');
+    for (var i = 0; i < links.length; i++) {
+      links[i].setAttribute('href', DOWNLOAD_URL);
+      links[i].setAttribute('target', '_blank');
+      links[i].setAttribute('rel', 'noopener');
+    }
+  })();
+
+  // Theme toggle (per-viewer convenience; falls back silently)
+  (function () {
+    var btn = document.getElementById('themeBtn');
+    var root = document.documentElement;
+    try {
+      var saved = localStorage.getItem('nullchat-theme');
+      if (saved) root.setAttribute('data-theme', saved);
+    } catch (e) {}
+    btn.addEventListener('click', function () {
+      var isDark = root.getAttribute('data-theme') === 'dark' ||
+        (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+      var next = isDark ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('nullchat-theme', next); } catch (e) {}
+    });
+  })();
+
+  // Scatter twinkling stars in the dark bands
+  function seedStars(id, n) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var html = '';
+    for (var i = 0; i < n; i++) {
+      var s = (Math.random() * 2.4 + 1).toFixed(1);
+      html += '<span class="star" style="left:' + (Math.random() * 100).toFixed(2) + '%;top:' +
+        (Math.random() * 100).toFixed(2) + '%;width:' + s + 'px;height:' + s +
+        'px;animation-delay:' + (Math.random() * 3).toFixed(2) + 's"></span>';
+    }
+    el.innerHTML = html;
+  }
+  seedStars('stars', 70);
+  seedStars('stars2', 40);
+</script>
